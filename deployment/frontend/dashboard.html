@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Red Thread – Intelligent Blood Donation Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">◆</span>
+        <span>Red Thread</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="find-blood.html">Find Blood</a>
+        <a href="register.html">Become Donor</a>
+        <a href="about.html">About</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="dashboard-page">
+    <div class="container">
+      <h1 class="section-title">Dashboard</h1>
+      <p style="color: var(--gray-600);">System overview and key metrics.</p>
+
+      <div class="dashboard-stats">
+        <div class="dashboard-card">
+          <h4>Total Registered Donors</h4>
+          <div class="value" id="stat-total-donors">Loading...</div>
+        </div>
+        <div class="dashboard-card">
+          <h4>Active Donors (Ready)</h4>
+          <div class="value success" id="stat-active-donors">Loading...</div>
+        </div>
+        <div class="dashboard-card">
+          <h4>Total Lives Saved</h4>
+          <div class="value" id="stat-lives-saved">Loading...</div>
+        </div>
+        <div class="dashboard-card success">
+          <h4>Total Blood Donated</h4>
+          <div class="value" id="stat-total-volume">Loading...</div>
+        </div>
+      </div>
+      <h2 class="section-title" style="margin-top: 2rem;">Analytics</h2>
+      <div class="chart-grid">
+        <div class="chart-placeholder">Donation Trends</div>
+        <div class="chart-placeholder">Availability Rate</div>
+        <div class="chart-placeholder">Emergency Response Time</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">Red Thread</div>
+      <p class="footer-tagline">Donate blood, save lives.</p>
+      <p class="footer-emergency">Emergency Helpline: 104</p>
+      <p class="footer-copy">&copy; 2025 Red Thread</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

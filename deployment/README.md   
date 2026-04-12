@@ -1,0 +1,32 @@
+# 🔴 Red Thread – Intelligent Blood Donation Finder
+
+## 📌 Project Overview
+**Red Thread** is an intelligent, Machine Learning-powered platform designed to connect blood donors with recipients in critical emergencies. Instead of relying on a simple database search, our platform uses an advanced **5-in-1 Machine Learning Ensemble Model** to predict donor availability and calculate a real-time **AI Match Score** based on recency, frequency, age, and location.
+
+## 🛠️ Tech Stack
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript
+* **Backend:** Python, Flask, RESTful APIs
+* **Machine Learning:** Scikit-Learn (Random Forest, Gradient Boosting, SVM, Voting Classifier)
+* **Data Processing:** Pandas, Numpy, StandardScaler, OneHotEncoder
+
+## 🚀 Key Features
+1. **Smart Donor Matching:** Calculates an AI Match Score based on the donor's past donation history and current location.
+2. **Dynamic Automated Registration:** New donors can register via the website, and their data is automatically appended to the permanent dataset (`new_donors.csv`) without any manual entry.
+3. **Emergency Penalty System:** Adjusts match scores dynamically based on the urgency of the request and the physical distance of the donor.
+4. **Live Statistics Dashboard:** Real-time calculation of lives saved, total donations, and active donors.
+
+## 📁 Directory Structure
+```text
+Red_Thread_Project/
+├── dataset/         # Contains the core CSV datasets
+├── code/            # Contains ML training scripts and requirements.txt
+├── deployment/      # Contains the Flask backend (app.py) and the trained ML model (.pkl)
+│   └── frontend/    # Contains all UI files (index.html, CSS, JS)
+├── results/         # Output images and ML accuracy metrics
+├── ppt/             # Presentation slides
+└── report/          # Final project documentation
+# Red Thread Deployment Guide
+1. Install dependencies: `pip install -r ../code/requirements.txt`
+2. Run the backend server: `python app.py`
+3. The server will start on `http://127.0.0.1:5000`.
+4. Open `frontend/index.html` in your browser (preferably using VS Code Live Server) to view the website.
