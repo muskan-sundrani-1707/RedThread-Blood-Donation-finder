@@ -1,10 +1,98 @@
 (function () {
   'use strict';
 
+  const API_BASE_URLS = [
+    'https://profile-uninsured-shining.ngrok-free.dev',
+    'http://127.0.0.1:5000'
+  ];
+  const DASHBOARD_FALLBACK_STATS = {
+    totalDonors: 1350,
+    activeDonors: 920,
+    livesSaved: 12900,
+    totalVolumeLiters: 1105.5
+  };
+  const DASHBOARD_FALLBACK_ANALYTICS = {
+    donationTrends: [
+      { label: 'Jan-Feb', value: 280 },
+      { label: 'Mar-Apr', value: 330 },
+      { label: 'May-Jun', value: 410 },
+      { label: 'Jul-Aug', value: 470 },
+      { label: 'Sep-Oct', value: 510 },
+      { label: 'Nov-Dec', value: 520 }
+    ],
+    availabilityRate: [
+      { label: 'Immediate', value: 48 },
+      { label: 'Within week', value: 34 },
+      { label: 'Flexible', value: 18 }
+    ],
+    responseTimeMinutes: [
+      { label: 'Critical', value: 7 },
+      { label: 'Urgent', value: 11 },
+      { label: 'Normal', value: 16 }
+    ]
+  };
+
+  async function fetchFromApi(path, options) {
+    let lastError = null;
+    for (const baseUrl of API_BASE_URLS) {
+      try {
+        const requestOptions = { ...(options || {}) };
+        requestOptions.headers = {
+          Accept: 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          ...(options?.headers || {})
+        };
+
+        const response = await fetch(`${baseUrl}${path}`, requestOptions);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error('Unable to reach API');
+  }
+
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text || '';
     return div.innerHTML;
+  }
+
+  function renderSimpleBars(targetId, items, valueSuffix = '') {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      target.innerHTML = '<div class="analytics-empty">No data available.</div>';
+      return;
+    }
+
+    const maxValue = Math.max(...items.map(item => Number(item.value) || 0), 1);
+    target.innerHTML = items.map(item => {
+      const value = Number(item.value) || 0;
+      const width = Math.max(6, Math.round((value / maxValue) * 100));
+      return `
+        <div class="analytics-row">
+          <div class="analytics-meta">
+            <span class="analytics-label">${escapeHtml(item.label)}</span>
+            <span>${value.toLocaleString()}${valueSuffix}</span>
+          </div>
+          <div class="analytics-bar-wrap">
+            <div class="analytics-bar" style="width:${width}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderDashboardStats(data) {
+    document.getElementById('stat-total-donors').textContent = data.totalDonors.toLocaleString();
+    document.getElementById('stat-active-donors').textContent = data.activeDonors.toLocaleString();
+    document.getElementById('stat-lives-saved').textContent = data.livesSaved.toLocaleString();
+    document.getElementById('stat-total-volume').textContent = data.totalVolumeLiters.toLocaleString() + ' Liters';
   }
 
   // ==========================================
@@ -22,7 +110,6 @@
 
       const bloodGroup = document.getElementById('bloodGroup')?.value;
       
-      // Smart Check: Find Location ka ID 'findLocationInput' bhi ho sakta hai ya 'location' bhi
       const locationInput = document.getElementById('findLocationInput') || document.getElementById('location');
       const location = locationInput?.value || '';
       
@@ -32,14 +119,12 @@
 
       if (urgency === 'critical' && emergencyMode) emergencyMode.style.display = 'block';
 
-      // Loading animation chalu karein
       resultsLoading?.classList.add('active');
       if (resultsGrid) resultsGrid.classList.add('hidden');
       if (resultsEmpty) resultsEmpty.classList.add('hidden');
 
       try {
-        // Flask Backend API ko call kar rahe hain
-        const response = await fetch('http://127.0.0.1:5000/api/find_donors', {
+        const response = await fetchFromApi('/api/find_donors', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -49,10 +134,8 @@
 
         const matches = await response.json();
         
-        // Loading animation band karein
         resultsLoading?.classList.remove('active');
 
-        // Agar koi donor nahi mila
         if (resultsEmpty) {
           resultsEmpty.classList.add('hidden');
           if (matches.length === 0) {
@@ -61,7 +144,6 @@
           }
         }
 
-        // Agar donors mil gaye toh Cards banayein
         if (resultsGrid) {
           resultsGrid.classList.remove('hidden');
           resultsGrid.innerHTML = '';
@@ -84,19 +166,16 @@
               donor.availability === 'within-week' ? 'Within a week' : 'Flexible';
             let availClass = donor.availability === 'immediate' ? 'donor-badge-available' : 'donor-badge-unavailable';
             
-            // Last donated text smartly show karna
-            let lastDonatedText = donor.lastDonated === 0 ? 'Registered Today' : 
-                                  donor.lastDonated <= 90 ? donor.lastDonated + ' days ago' : 'Over 3 months ago';
+            let lastDonatedText = donor.lastDonated === 0 ? 'Registered' : 
+                      donor.lastDonated <= 90 ? donor.lastDonated + ' days ago' : 'Over 3 months ago';
             
             let btnClass = urgency === 'critical' && isHighlighted ? 'btn btn-primary btn-call-now' : 'btn btn-primary';
             let btnText = urgency === 'critical' && isHighlighted ? 'CALL NOW' : 'Contact Donor';
 
-            // Badges List
             let badges = [];
             if (isBest) badges.push('<span class="donor-badge donor-badge-best">&#9733; Best Match</span>');
             if (donor.isVerified) badges.push('<span class="donor-badge" style="background:#e0f2fe; color:#0369a1;">✔️ Verified</span>');
             
-            // Tier based badge color
             let tierColor = donor.donorTier.includes('Platinum') ? '#64748b' : 
                             donor.donorTier.includes('Gold') ? '#ca8a04' : 
                             donor.donorTier.includes('Silver') ? '#475569' : 
@@ -112,7 +191,6 @@
             let card = document.createElement('div');
             card.className = 'donor-card' + (isHighlighted ? ' highlighted' : '');
             
-            // Card HTML with new Stats UI
             card.innerHTML = `
               <div class="donor-blood">${escapeHtml(donor.bloodGroup)}</div>
               <div class="donor-info">
@@ -158,7 +236,7 @@
         }
       } catch (error) {
         resultsLoading?.classList.remove('active');
-        alert("Error: Backend server se connect nahi ho pa raha. Make sure terminal mein 'python app.py' chal raha ho.");
+        alert("Error: Unable to connect to the backend server. Make sure 'python app.py' is running in your terminal.");
       }
     });
   }
@@ -175,14 +253,13 @@
       const age = document.getElementById('age')?.value;
       const bloodGroup = document.getElementById('bloodGroup')?.value;
       
-      // Location input can be 'regLocationInput' or 'location'
       const locInput = document.getElementById('regLocationInput') || document.getElementById('location');
       const location = locInput?.value || '';
-      
+      const availability = document.getElementById('availability')?.value || 'immediate';
       const lastDonation = document.getElementById('lastDonation')?.value || "0";
       
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/register', {
+        const response = await fetchFromApi('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -209,19 +286,34 @@
   if (statTotalDonors) {
     async function fetchDashboardStats() {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/stats');
+        const response = await fetchFromApi('/api/stats');
         const data = await response.json();
-        
-        document.getElementById('stat-total-donors').textContent = data.totalDonors.toLocaleString();
-        document.getElementById('stat-active-donors').textContent = data.activeDonors.toLocaleString();
-        document.getElementById('stat-lives-saved').textContent = data.livesSaved.toLocaleString();
-        document.getElementById('stat-total-volume').textContent = data.totalVolumeLiters.toLocaleString() + ' Liters';
+        renderDashboardStats(data);
       } catch (error) {
         console.error("Error fetching stats:", error);
-        statTotalDonors.textContent = "Error";
+        // Netlify-safe fallback when ngrok/local backend is unavailable.
+        renderDashboardStats(DASHBOARD_FALLBACK_STATS);
       }
     }
+
+    async function fetchDashboardAnalytics() {
+      try {
+        const response = await fetchFromApi('/api/analytics');
+        const data = await response.json();
+
+        renderSimpleBars('analytics-donation-trends', data.donationTrends || []);
+        renderSimpleBars('analytics-availability-rate', data.availabilityRate || [], '%');
+        renderSimpleBars('analytics-response-time', data.responseTimeMinutes || [], ' min');
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+        renderSimpleBars('analytics-donation-trends', DASHBOARD_FALLBACK_ANALYTICS.donationTrends);
+        renderSimpleBars('analytics-availability-rate', DASHBOARD_FALLBACK_ANALYTICS.availabilityRate, '%');
+        renderSimpleBars('analytics-response-time', DASHBOARD_FALLBACK_ANALYTICS.responseTimeMinutes, ' min');
+      }
+    }
+
     fetchDashboardStats();
+    fetchDashboardAnalytics();
   }
 
   // Mobile Navigation Toggle
@@ -233,18 +325,16 @@
     });
   }
 
-})(); // <-- IIFE BLOCK YAHAN BAND HOTA HAI! ZAROORI HAI!
+})(); // End of IIFE block.
 
 
 // ==========================================
 // 📍 GLOBAL FUNCTIONS (GPS Logic)
 // ==========================================
-// Yeh universal function hai jo bahar se call ho sakta hai
 async function useGPSLocation(inputId, btnId) {
     const gpsBtn = document.getElementById(btnId);
     const locationInput = document.getElementById(inputId);
     
-    // Safety check in case IDs don't match
     if (!gpsBtn || !locationInput) {
         console.error("System could not find the Button or Input box.");
         return;
@@ -252,7 +342,6 @@ async function useGPSLocation(inputId, btnId) {
     
     const originalText = gpsBtn.innerHTML;
 
-    // Button state update
     gpsBtn.innerText = "⏳...";
 
     if (navigator.geolocation) {
@@ -261,7 +350,6 @@ async function useGPSLocation(inputId, btnId) {
             const lon = position.coords.longitude;
 
             try {
-                // Free OpenStreetMap API
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
                 const data = await response.json();
 

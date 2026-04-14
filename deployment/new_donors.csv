@@ -1,3 +1,5 @@
-recency,frequency,monetary,time,donated_target,blood_group,age,city,name
-0,0,0,0,1,AB+,19,Bina,Ya
-0,0,0,0,1,AB+,19,Jaipur,Khushi
+recency,frequency,monetary,time,donated_target,blood_group,age,city,name,availability
+1,1,250,1,1,AB+,21,Bhopal,Muskan,immediate
+0,0,0,0,1,A+,21,Bina,Muskan,immediate
+0,0,0,0,1,B+,21,Bhopal,Prapti,immediate
+1,1,250,1,1,A+,19,Bhopal,Prachi,immediate

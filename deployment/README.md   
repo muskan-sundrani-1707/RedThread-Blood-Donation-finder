@@ -1,5 +1,7 @@
 # 🔴 Red Thread – Intelligent Blood Donation Finder
+🚀 **Live Demo / Deployment Link:** [Click Here to Visit Red Thread](https://red-thread-ai.netlify.app)
 
+> **⚠️ Note for Evaluator:** > Our Frontend is permanently hosted on Netlify. However, our ML Model and Flask Backend are currently running locally and connected via **Ngrok** for this demonstration. Please ensure our local server is active to test the AI Match Score and real-time database searches.
 ## 📌 Project Overview
 **Red Thread** is an intelligent, Machine Learning-powered platform designed to connect blood donors with recipients in critical emergencies. Instead of relying on a simple database search, our platform uses an advanced **5-in-1 Machine Learning Ensemble Model** to predict donor availability and calculate a real-time **AI Match Score** based on recency, frequency, age, and location.
 
